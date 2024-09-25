@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<testsuite failures="0" skipped="0" name="cucumber-js" time="35.566052097" tests="1">
+  <testcase classname="Login and verify the Profile name appears" name="Validate user can login" time="35.566052097">
+    <system-out><![CDATA[Given I open the HomePage.................................................passed
+When I enter credential and submit........................................passed
+Then I navigated to Homepage successful!..................................passed]]></system-out>
+  </testcase>
+</testsuite>

@@ -1,0 +1,68 @@
+name: WorkSpace-Artillery-Debug-$(date:yyyy).$(date:MM).$(date:dd).$(rev:r)
+
+resources:
+  repositories:
+    - repository: ArtilleryAutomation
+      name: Connor.Framework.Automation
+      type: git
+      ref: refs/heads/dev
+
+parameters:
+  - name: testScenarios
+    type: object
+    default:
+      debug: "test-script-debug.yml"
+
+jobs:
+  - ${{ each scenario in parameters.testScenarios }}:
+      - job: ${{ scenario.key }}
+        pool:
+          name: Azure Pipelines
+          vmImage: 'windows-2019'
+          demands:
+          - SupportAutomation -equals true
+        timeoutInMinutes: 0
+        steps:
+          - task: NodeTool@0
+            displayName: "Install Node.js"
+            inputs:
+              versionSpec: "18"
+
+          - script: |
+              npm ci
+            displayName: "NPM Install Dependencies"
+
+          - script: |
+              npx playwright install --with-deps
+            displayName: "Install Playwright"
+
+          - script: |
+              npm install -g artillery@latest
+            displayName: "Install Artillery"
+
+          - script: |
+              npx playwright test
+            displayName: "Run Login"
+            
+          - script: |
+              mkdir reports
+            displayName: "Create Reports Directory"
+
+          - script: |
+              artillery run artillery.yml --output reports/resultArtillery.json
+            displayName: "Run Artillery tests"
+            env:
+              CI: "true"
+
+          - script: |
+              artillery report reports/resultArtillery.json
+            displayName: "Generate Artillery Report"
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Artillery Reports"
+            inputs:
+              targetPath: "$(System.DefaultWorkingDirectory)/reports"
+              publishLocation: "pipeline"
+              artifact: ${{ scenario.key }}
+            condition: succeededOrFailed()

@@ -1,0 +1,35 @@
+config:
+  target: https://demo.nopcommerce.com/
+  payload:
+      path: ./src/support/artillery/pages.csv
+      fields:
+        - 'url'
+      skipHeader: true
+  engines:
+    playwright: 
+      launchOptions:
+        headless: true
+      contextOptions:
+        storageState: 'src/support/auth/user.json'
+      defaultNavigationTimeout: 30000
+  processor : "./src/support/artillery/loginPerformanceTest.js"
+  phases:
+      # 5 users/5s => 1 users/s
+    - name: Stimulate 20 User Each Ask 10 Question
+      duration: 2
+      arrivalRate: 10
+      # rampTo: 5
+    # 10 User/s => +2 U/s to 20User/s
+    # - name: Ramp up to peak load
+    #   duration: 10
+    #   arrivalRate: 10
+    #   rampTo: 20
+    #  # 20 User/s in 60s
+    # - name: Sustained to peak load
+    #   duration: 60
+    #   arrivalRate: 20
+scenarios:
+    - engine: playwright
+      testFunction : "artilleryScript"
+reporting:
+  outputDir: reports  
